@@ -24,6 +24,8 @@ P_MINUS_1_SFX = pygame.mixer.Sound(os.path.join('assets', 'sounds', 'minus1.mp3'
 P_MINUS_1_SFX.set_volume(0.1)
 BULLET_COL_SFX = pygame.mixer.Sound(os.path.join('assets', 'sounds', 'rumble.flac'))
 BULLET_COL_SFX.set_volume(0.25)
+LOW_HEALTH_SFX = pygame.mixer.Sound(os.path.join('assets', 'sounds', 'low_health_alert.mp3'))
+LOW_HEALTH_SFX.set_volume(0.25)
 
 COLLISION_DELAY = 900
 P_FLASH_DURATION = 750

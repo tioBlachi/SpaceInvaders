@@ -6,7 +6,7 @@ import os
 from button import Button
 from constants import WIDTH, HEIGHT, BACKGROUND, PLAYER_VEL, ENEMY_VEL, LASER_VEL_P, LASER_VEL_E, P_LASER_SFX, \
     P_DAMAGE_SFX, FPS, FONT_PATH, WHITE, E_EXPLOSION_SFX, SHAKE_INTENSITY, SHAKE_DURATION, COLLISION_DELAY, \
-    DISPLAY_FONT, MAIN_MENU_FONT, P_MINUS_1_SFX, COOLDOWN, BULLET_COL_SFX, P_L_DAMAGE_SFX, E_LASER_SFX
+    DISPLAY_FONT, MAIN_MENU_FONT, P_MINUS_1_SFX, COOLDOWN, BULLET_COL_SFX, P_L_DAMAGE_SFX, E_LASER_SFX, LOW_HEALTH_SFX
 from game_state import game_state
 
 class Player(pygame.sprite.Sprite):
@@ -126,7 +126,7 @@ def game_over():
     screen = pygame.display.get_surface()
     text = MAIN_MENU_FONT.render('Game Over', True, (255, 0, 0))
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-    player.score = 0
+    #player.score = 0
     game_state.difficulty = 3
     player.health = 100
     screen.blit(text, text_rect)
@@ -151,8 +151,10 @@ def win():
 
 def restart():
     SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption('Next Level')
+    pygame.display.set_caption('You Lose!')
 
+    final_score = MAIN_MENU_FONT.render(f'Final Score: {player.score}', True, WHITE)
+    final_score_rect = final_score.get_rect(center=(WIDTH // 2, HEIGHT // 3))
     quit_button = Button("QUIT", WIDTH // 2 - 75, HEIGHT // 2 - 25, SCREEN, True)
     restart_button = Button("RESTART", WIDTH // 2 - 75, HEIGHT // 2 - 100, SCREEN, True)
 
@@ -181,6 +183,7 @@ def restart():
         SCREEN.fill((0, 0, 0))
         restart_button.draw()
         quit_button.draw()
+        SCREEN.blit(final_score, final_score_rect)
         pygame.display.update()
         pygame.time.Clock().tick(FPS)
         player.rect.midtop = (WIDTH // 2, HEIGHT - 100)
@@ -273,18 +276,13 @@ def start_game(SCREEN):
         enemies.add(enemy)
         all_sprites.add(enemy)
 
-    for enemy in enemies:
-        from constants import ENEMY_VEL
-        for _ in range(game_state.difficulty):
-            if 10 <= player.score <= 20:
-                ENEMY_VEL += random.randint(ENEMY_VEL + 1, ENEMY_VEL + 3)
-
     clock = pygame.time.Clock()
 
     last_shot_time = 0
     last_collision_time = 0
-    last_enemy_shot = 0
-    e_shot_cooldown = 2000
+    alert_start = 0
+    alert_duration = 3000
+    alert_playing = False
 
     running = True
     while running:
@@ -356,6 +354,15 @@ def start_game(SCREEN):
 
 
         all_sprites.update()
+
+        if player.health <= 15:
+            if not alert_playing:
+                LOW_HEALTH_SFX.play()
+                alert_start = current_time
+                alert_playing = True
+
+        if alert_playing and current_time - alert_start >= alert_duration:
+            LOW_HEALTH_SFX.stop()
 
         if player.health <= 0:
             game_over()
